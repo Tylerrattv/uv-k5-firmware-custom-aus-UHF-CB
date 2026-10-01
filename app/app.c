@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
@@ -1690,6 +1691,8 @@ static void ProcessKey(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 				GENERIC_Key_PTT(bKeyPressed);
 				goto Skip;
 			}
+
+			if (gAusCbMode) goto Skip; // CB voice mode never sends keypad tones.
 
 			if (Key == KEY_SIDE2) { // transmit 1750Hz tone
 				Code = 0xFE;

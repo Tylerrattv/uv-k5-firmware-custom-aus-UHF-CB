@@ -1,6 +1,7 @@
 name: Firmware
 on:
   push:
+  workflow_dispatch:
   pull_request:
 permissions:
   contents: read

@@ -1,6 +1,7 @@
 #include <string.h>
 #include "app/auscb.h"
 #include "app/chFrScanner.h"
+#include "app/dtmf.h"
 #include "driver/bk4819.h"
 #include "functions.h"
 #include "misc.h"
@@ -12,7 +13,7 @@ bool gAusCbDuplex;
 uint8_t gAusCbChannel = 1;
 static VFO_Info_t previousVfo[2];
 static uint8_t previousScreen[2];
-static uint8_t previousDualWatch, previousCrossBand, previousRoger;
+static uint8_t previousDualWatch, previousCrossBand, previousRoger, previousSquelch;
 #ifdef ENABLE_VOX
 static bool previousVox;
 #endif
@@ -75,6 +76,13 @@ void AUSCB_SetMode(bool enabled)
     if (enabled == gAusCbMode || gCurrentFunction == FUNCTION_TRANSMIT) return;
     if (gScanStateDir != SCAN_OFF) CHFRSCANNER_Stop();
     gInputBoxIndex = 0;
+    gWasFKeyPressed = false;
+    DTMF_clear_input_box();
+    gDTMF_PreviousIndex = 0;
+#ifdef ENABLE_DTMF_CALLING
+    DTMF_clear_RX();
+    gDTMF_ReplyState = DTMF_REPLY_NONE;
+#endif
     gRequestSaveChannel = 0;
     if (enabled) {
         memcpy(previousVfo, gEeprom.VfoInfo, sizeof(previousVfo));
@@ -82,6 +90,7 @@ void AUSCB_SetMode(bool enabled)
         previousDualWatch = gEeprom.DUAL_WATCH;
         previousCrossBand = gEeprom.CROSS_BAND_RX_TX;
         previousRoger = gEeprom.ROGER;
+        previousSquelch = gEeprom.SQUELCH_LEVEL;
 #ifdef ENABLE_VOX
         previousVox = gEeprom.VOX_SWITCH;
         gEeprom.VOX_SWITCH = false;
@@ -102,6 +111,7 @@ void AUSCB_SetMode(bool enabled)
         gEeprom.DUAL_WATCH = previousDualWatch;
         gEeprom.CROSS_BAND_RX_TX = previousCrossBand;
         gEeprom.ROGER = previousRoger;
+        gEeprom.SQUELCH_LEVEL = previousSquelch;
 #ifdef ENABLE_VOX
         gEeprom.VOX_SWITCH = previousVox;
 #endif
