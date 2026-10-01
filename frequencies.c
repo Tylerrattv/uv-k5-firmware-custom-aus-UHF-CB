@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include "frequencies.h"
 #include "misc.h"
 #include "settings.h"
@@ -161,6 +162,7 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 
 int32_t TX_freq_check(const uint32_t Frequency)
 {	// return '0' if TX frequency is allowed
+	if (gAusCbMode) return AUSCB_TxAllowed(Frequency) ? 0 : -1;
 	// otherwise return '-1'
 
 	if (Frequency < frequencyBandTable[0].lower || Frequency > frequencyBandTable[BAND_N_ELEM - 1].upper)

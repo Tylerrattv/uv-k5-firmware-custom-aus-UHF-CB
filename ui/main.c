@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include <string.h>
 #include <stdlib.h>  // abs()
 
@@ -482,6 +483,14 @@ void UI_DisplayMain(void)
 		{
 			if (state < ARRAY_SIZE(VfoStateStr))
 				UI_PrintString(VfoStateStr[state], 31, 0, line, 8);
+		}
+		else if (gAusCbMode) {
+			sprintf(String, "CB %02u%s", gAusCbChannel,
+			        gAusCbDuplex && AUSCB_IsRepeater(gAusCbChannel) ? " DUP" : "");
+			UI_PrintString(String, 32, 0, line, 8);
+			sprintf(String, "%lu.%05lu", (unsigned long)(frequency / 100000),
+			        (unsigned long)(frequency % 100000));
+			UI_PrintStringSmallNormal(String, 32, 0, line + 1);
 		}
 		else if (gInputBoxIndex > 0 && IS_FREQ_CHANNEL(gEeprom.ScreenChannel[vfo_num]) && gEeprom.TX_VFO == vfo_num)
 		{	// user entering a frequency

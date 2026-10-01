@@ -124,6 +124,7 @@ ifeq ($(ENABLE_FMRADIO),1)
 endif
 OBJS += app/generic.o
 OBJS += app/main.o
+OBJS += app/auscb.o
 OBJS += app/menu.o
 ifeq ($(ENABLE_SPECTRUM), 1)
 OBJS += app/spectrum.o

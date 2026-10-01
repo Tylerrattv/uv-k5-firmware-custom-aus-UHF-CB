@@ -1,4 +1,5 @@
 
+#include "app/auscb.h"
 #include "app/app.h"
 #include "app/chFrScanner.h"
 #include "functions.h"
@@ -130,6 +131,10 @@ void CHFRSCANNER_Stop(void)
 	gScanStateDir = SCAN_OFF;
 
 	const uint32_t chFr = gScanKeepResult ? lastFoundFrqOrChan : initialFrqOrChan;
+	if (gAusCbMode) {
+		AUSCB_SelectChannel(AUSCB_ChannelFromFrequency(chFr));
+		return;
+	}
 	const bool channelChanged = chFr != initialFrqOrChan;
 	if (IS_MR_CHANNEL(gNextMrChannel)) {
 		gEeprom.MrChannel[gEeprom.RX_VFO]     = chFr;
@@ -156,6 +161,11 @@ void CHFRSCANNER_Stop(void)
 
 static void NextFreqChannel(void)
 {
+	if (gAusCbMode) {
+		AUSCB_Step(gScanStateDir);
+		gScanPauseDelayIn_10ms = 9;
+		return;
+	}
 #ifdef ENABLE_SCAN_RANGES
 	if(gScanRangeStart) {
 		gRxVfo->freq_config_RX.Frequency = APP_SetFreqByStepAndLimits(gRxVfo, gScanStateDir, gScanRangeStart, gScanRangeStop);
