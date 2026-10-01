@@ -341,7 +341,7 @@ void UI_DisplayMain(void)
 		if (activeTxVFO != vfo_num) // this is not active TX VFO
 		{
 #ifdef ENABLE_SCAN_RANGES
-			if(gScanRangeStart) {
+			if(gScanRangeStart && !gAusCbMode) {
 				UI_PrintString("ScnRng", 5, 0, line, 8);
 				sprintf(String, "%3u.%05u", gScanRangeStart / 100000, gScanRangeStart % 100000);
 				UI_PrintStringSmallNormal(String, 56, 0, line);
@@ -485,6 +485,8 @@ void UI_DisplayMain(void)
 				UI_PrintString(VfoStateStr[state], 31, 0, line, 8);
 		}
 		else if (gAusCbMode) {
+			if (gCurrentFunction == FUNCTION_TRANSMIT && activeTxVFO == vfo_num)
+				frequency = gEeprom.VfoInfo[vfo_num].pTX->Frequency;
 			sprintf(String, "CB %02u%s", gAusCbChannel,
 			        gAusCbDuplex && AUSCB_IsRepeater(gAusCbChannel) ? " DUP" : "");
 			UI_PrintString(String, 32, 0, line, 8);
