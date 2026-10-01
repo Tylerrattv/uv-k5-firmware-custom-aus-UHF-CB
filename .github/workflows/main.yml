@@ -14,15 +14,28 @@ jobs:
       - name: Install build tools
         run: pacman -Syu --noconfirm base-devel arm-none-eabi-gcc arm-none-eabi-newlib git python python-crcmod
       - uses: actions/checkout@v4
-      - name: Channel plan tests
-        run: gcc -std=c11 -Wall -Wextra -Werror tests/auscb_plan_test.c -o /tmp/auscb-test && /tmp/auscb-test
-      - name: Build
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Channel plan and mode tests
+        run: |
+          gcc -std=c11 -Wall -Wextra -Werror tests/auscb_plan_test.c -o /tmp/auscb-plan-test
+          /tmp/auscb-plan-test
+          gcc -std=c11 -Wall -Wextra -Werror -I. -DENABLE_VOX tests/auscb_mode_test.c app/auscb.c -o /tmp/auscb-mode-test
+          /tmp/auscb-mode-test
+          gcc -std=c11 -Wall -Wextra -Werror -I. -DENABLE_VOX -DENABLE_DTMF_CALLING tests/auscb_mode_test.c app/auscb.c -o /tmp/auscb-dtmf-test
+          /tmp/auscb-dtmf-test
+      - name: Build and verify flash image
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          make
+          make AUTHOR_STRING=AUSCB
           arm-none-eabi-size firmware
+          python tests/verify_firmware.py
+          sha256sum firmware.packed.bin > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: aus-uhf-cb-firmware
-          path: firmware*.bin
+          path: |
+            firmware.packed.bin
+            SHA256SUMS.txt
+            AU-UHF-CB.md
           if-no-files-found: error

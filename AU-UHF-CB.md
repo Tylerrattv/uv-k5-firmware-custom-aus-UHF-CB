@@ -13,3 +13,5 @@ Australian CB equipment must comply with ACMA technical standards. Programming t
 References:
 - https://www.acma.gov.au/licences/citizen-band-radio-stations-class-licence
 - https://github.com/egzumer/uv-k5-firmware-custom
+
+This build disables optional DTMF calling globally to fit the radio's 60 KB application flash. The spectrum analyser and FM broadcast receiver remain included. Squelch changes in CB mode are temporary and the original squelch setting is restored on exit. Keypad DTMF and 1750 Hz tones are disabled while transmitting in CB mode.

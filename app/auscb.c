@@ -46,7 +46,7 @@ void AUSCB_Apply(VFO_Info_t *vfo)
 
 void AUSCB_SelectChannel(uint8_t channel)
 {
-    if (channel < 1 || channel > 80) return;
+    if (channel < 1 || channel > 80 || gCurrentFunction == FUNCTION_TRANSMIT) return;
     gAusCbChannel = channel;
     if (!gAusCbMode) return;
     AUSCB_Apply(&gEeprom.VfoInfo[0]);

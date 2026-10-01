@@ -79,6 +79,7 @@ uint8_t gUnlockAllTxConfCnt;
 
 void MENU_StartCssScan(void)
 {
+	if (gAusCbMode) return;
 	SCANNER_Start(true);
 	gUpdateStatus = true;
 	gCssBackgroundScan = true;
@@ -380,6 +381,20 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 	return 0;
 }
 
+static bool MENU_CbSettingAllowed(void)
+{
+    switch (UI_MENU_GetCurrentMenuId()) {
+        case MENU_AUSCB:
+        case MENU_CB_CH:
+        case MENU_CB_DUP:
+        case MENU_SQL:
+        case MENU_TXP:
+            return true;
+        default:
+            return false;
+    }
+}
+
 void MENU_AcceptSetting(void)
 {
 	int32_t        Min;
@@ -387,11 +402,7 @@ void MENU_AcceptSetting(void)
 	FREQ_Config_t *pConfig = &gTxVfo->freq_config_RX;
 
 	// Channel and mode edits are temporary while the CB profile is active.
-	if (gAusCbMode && UI_MENU_GetCurrentMenuId() != MENU_AUSCB &&
-	    UI_MENU_GetCurrentMenuId() != MENU_CB_CH &&
-	    UI_MENU_GetCurrentMenuId() != MENU_CB_DUP &&
-	    UI_MENU_GetCurrentMenuId() != MENU_SQL &&
-	    UI_MENU_GetCurrentMenuId() != MENU_TXP) {
+	if (gAusCbMode && !MENU_CbSettingAllowed()) {
 		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
 		return;
 	}
@@ -1413,6 +1424,10 @@ static void MENU_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 
 static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 {
+	if (gAusCbMode && !MENU_CbSettingAllowed()) {
+		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+		return;
+	}
 	if (bKeyHeld || !bKeyPressed)
 		return;
 
