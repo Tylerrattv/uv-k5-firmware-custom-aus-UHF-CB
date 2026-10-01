@@ -30,6 +30,7 @@
 #include "version.h"
 
 #include "app/app.h"
+#include "app/auscb.h"
 #include "app/dtmf.h"
 #include "bsp/dp32g030/gpio.h"
 #include "bsp/dp32g030/syscon.h"
@@ -190,6 +191,10 @@ void Main(void)
 #endif
 
 		BOOT_ProcessMode(BootMode);
+
+		// Preserve special maintenance boot modes and the normal VFO backup.
+		if (BootMode == BOOT_MODE_NORMAL)
+			AUSCB_SetMode(true);
 
 		GPIO_ClearBit(&GPIOA->DATA, GPIOA_PIN_VOICE_0);
 
