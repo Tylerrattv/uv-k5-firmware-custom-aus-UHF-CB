@@ -489,7 +489,8 @@ void UI_DisplayMain(void)
 				frequency = gEeprom.VfoInfo[vfo_num].pTX->Frequency;
 			sprintf(String, "CB %02u%s", gAusCbChannel,
 			        gAusCbDuplex && AUSCB_IsRepeater(gAusCbChannel) ? " DUP" : "");
-			UI_PrintString(String, 32, 0, line, 8);
+			// Each CB text row must occupy one 8-pixel page; the big font spans two.
+			UI_PrintStringSmallBold(String, 32, 0, line);
 			sprintf(String, "%lu.%05lu", (unsigned long)(frequency / 100000),
 			        (unsigned long)(frequency % 100000));
 			UI_PrintStringSmallNormal(String, 32, 0, line + 1);
