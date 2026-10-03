@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "app/auscb.h"
+#include "aircraft_expected.h"
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
 #include "driver/bk4819.h"
@@ -16,7 +17,7 @@ VFO_Info_t *gTxVfo, *gRxVfo, *gCurrentVfo;
 FUNCTION_Type_t gCurrentFunction;
 int8_t gScanStateDir;
 uint8_t gInputBoxIndex, gRequestSaveChannel, gUpdateStatus, gDTMF_PreviousIndex;
-bool gWasFKeyPressed, gUpdateDisplay;
+bool gWasFKeyPressed, gUpdateDisplay, gSetting_live_DTMF_decoder;
 #ifdef ENABLE_DTMF_CALLING
 DTMF_ReplyState_t gDTMF_ReplyState;
 void DTMF_clear_RX(void) {}
@@ -119,5 +120,52 @@ int main(void)
     AUSCB_SetMode(false);
     assert(memcmp(original, gEeprom.VfoInfo, sizeof(original)) == 0);
     puts("CB mode: state restoration, channel/duplex selection, TX restrictions and TX retune guard passed");
+    // Every installed airport/service must remain RX-only, including wrong modulation.
+    AIR_SetMode(true);
+    assert(gAircraftMode && gAusCbMode);
+    unsigned expectedIndex=0;
+    assert(gAirportsCount==sizeof(expectedAirports)/sizeof(expectedAirports[0]));
+    for (uint8_t region=0;region<8;region++) {
+        AIR_SelectRegion(region);
+        assert(gAirRegion==region && AIR_AirportCount(region)>0);
+        for (uint16_t a=0;a<AIR_AirportCount(region);a++) {
+            AIR_SelectAirport(a);
+            const AirAirport *airport=AIR_GetAirport(a);
+            const AirAirport *expected=&expectedAirports[expectedIndex++];
+            assert(strcmp(airport->name,expected->name)==0);
+            assert(strcmp(airport->ident,expected->ident)==0);
+            assert(airport->first==expected->first && airport->count==expected->count);
+            assert(airport->region==region && airport->count>0);
+            assert(strlen(airport->name)<=16 && strlen(airport->ident)<=8);
+            for (uint16_t c=0;c<airport->count;c++) {
+                AIR_SelectChannel(c);
+                assert(gTxVfo->pRX->Frequency==AIR_GetChannel()->frequency);
+                assert(AIR_GetChannel()->frequency==expectedFrequencies[expected->first+c]);
+                assert(AIR_GetChannel()->service==expectedServices[expected->first+c]);
+                assert(gTxVfo->pRX->Frequency>=11800000 && gTxVfo->pRX->Frequency<13700000);
+                assert(gTxVfo->Modulation==MODULATION_AM);
+                assert(!AUSCB_TxAllowed(gTxVfo->pTX->Frequency));
+                gTxVfo->Modulation=MODULATION_FM;
+                assert(!AUSCB_TxAllowed(gTxVfo->pTX->Frequency));
+                AIR_SelectChannel(c);
+            }
+            AIR_SelectChannel(0); AIR_Step(-1);
+            assert(gAirChannel==airport->count-1);
+            AIR_Step(1); assert(gAirChannel==0);
+            const uint32_t firstFrequency=AIR_GetChannel()->frequency;
+            AIR_Step(1); AIR_RestoreFrequency(firstFrequency);
+            assert(AIR_GetChannel()->frequency==firstFrequency);
+            AIR_SelectChannel(65535); assert(AIR_GetChannel()->frequency==firstFrequency);
+        }
+    }
+    uint8_t region=gAirRegion; uint16_t airport=gAirAirport, channel=gAirChannel;
+    gCurrentFunction=FUNCTION_TRANSMIT;
+    AIR_SelectRegion(0); AIR_SelectAirport(0); AIR_SelectChannel(0); AIR_SetMode(false);
+    assert(gAircraftMode && gAirRegion==region && gAirAirport==airport && gAirChannel==channel);
+    gCurrentFunction=FUNCTION_FOREGROUND;
+    AIR_SetMode(false); AUSCB_SelectChannel(40);
+    assert(!gAircraftMode && gAusCbMode && gTxVfo->Modulation==MODULATION_FM);
+    assert(AUSCB_TxAllowed(AUSCB_Frequency(40)));
+    puts("Aircraft profile: all airports, channel bounds, AM, TX block and CB return passed");
     return 0;
 }

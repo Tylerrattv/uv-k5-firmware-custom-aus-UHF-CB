@@ -20,10 +20,10 @@ static bool previousVox;
 
 void AUSCB_Apply(VFO_Info_t *vfo)
 {
-    vfo->CHANNEL_SAVE = FREQ_CHANNEL_FIRST + BAND7_470MHz;
-    vfo->Band = BAND7_470MHz;
-    vfo->Modulation = MODULATION_FM;
-    vfo->CHANNEL_BANDWIDTH = BK4819_FILTER_BW_NARROW;
+    vfo->CHANNEL_SAVE = FREQ_CHANNEL_FIRST + (gAircraftMode ? BAND2_108MHz : BAND7_470MHz);
+    vfo->Band = gAircraftMode ? BAND2_108MHz : BAND7_470MHz;
+    vfo->Modulation = gAircraftMode ? MODULATION_AM : MODULATION_FM;
+    vfo->CHANNEL_BANDWIDTH = gAircraftMode ? BK4819_FILTER_BW_WIDE : BK4819_FILTER_BW_NARROW;
     vfo->STEP_SETTING = STEP_12_5kHz;
     vfo->StepFrequency = 1250;
     vfo->FrequencyReverse = false;
@@ -35,8 +35,8 @@ void AUSCB_Apply(VFO_Info_t *vfo)
 #ifdef ENABLE_DTMF_CALLING
     vfo->DTMF_DECODING_ENABLE = false;
 #endif
-    vfo->freq_config_RX.Frequency = AUSCB_Frequency(gAusCbChannel);
-    vfo->freq_config_TX.Frequency = AUSCB_TxFrequency(gAusCbChannel, gAusCbDuplex);
+    vfo->freq_config_RX.Frequency = gAircraftMode ? AIR_GetChannel()->frequency : AUSCB_Frequency(gAusCbChannel);
+    vfo->freq_config_TX.Frequency = gAircraftMode ? vfo->freq_config_RX.Frequency : AUSCB_TxFrequency(gAusCbChannel, gAusCbDuplex);
     vfo->freq_config_RX.CodeType = CODE_TYPE_OFF;
     vfo->freq_config_TX.CodeType = CODE_TYPE_OFF;
     vfo->pRX = &vfo->freq_config_RX;
@@ -59,13 +59,14 @@ void AUSCB_SelectChannel(uint8_t channel)
 
 void AUSCB_Step(int8_t direction)
 {
+    if (gAircraftMode) { AIR_Step(direction); return; }
     int channel = gAusCbChannel + (direction > 0 ? 1 : -1);
     AUSCB_SelectChannel(channel > 80 ? 1 : channel < 1 ? 80 : channel);
 }
 
 bool AUSCB_TxAllowed(uint32_t frequency)
 {
-    return AUSCB_VoiceChannel(gAusCbChannel) &&
+    return !gAircraftMode && AUSCB_VoiceChannel(gAusCbChannel) &&
            frequency == AUSCB_TxFrequency(gAusCbChannel, gAusCbDuplex) &&
            gCurrentVfo->Modulation == MODULATION_FM &&
            gCurrentVfo->CHANNEL_BANDWIDTH == BK4819_FILTER_BW_NARROW;
@@ -98,6 +99,10 @@ void AUSCB_SetMode(bool enabled)
         gEeprom.DUAL_WATCH = DUAL_WATCH_OFF;
         gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
         gEeprom.ROGER = 0;
+        gSetting_live_DTMF_decoder = false;
+#ifdef ENABLE_AM_FIX
+        gSetting_AM_fix = true;
+#endif
         gAusCbMode = true;
         for (unsigned int i = 0; i < 2; ++i) {
             gEeprom.ScreenChannel[i] = FREQ_CHANNEL_FIRST + BAND7_470MHz;
@@ -106,6 +111,7 @@ void AUSCB_SetMode(bool enabled)
         AUSCB_SelectChannel(gAusCbChannel);
     } else {
         gAusCbMode = false;
+        gAircraftMode = false;
         memcpy(gEeprom.VfoInfo, previousVfo, sizeof(previousVfo));
         memcpy(gEeprom.ScreenChannel, previousScreen, sizeof(previousScreen));
         gEeprom.DUAL_WATCH = previousDualWatch;

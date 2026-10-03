@@ -162,6 +162,7 @@ uint32_t FREQUENCY_RoundToStep(uint32_t freq, uint16_t step)
 
 int32_t TX_freq_check(const uint32_t Frequency)
 {	// return '0' if TX frequency is allowed
+	if (gAircraftMode) return -1;
 	if (gAusCbMode) return gSetting_F_LOCK != F_LOCK_ALL && AUSCB_TxAllowed(Frequency) ? 0 : -1;
 	// otherwise return '-1'
 

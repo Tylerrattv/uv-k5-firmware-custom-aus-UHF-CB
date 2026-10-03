@@ -322,10 +322,10 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
 	// held or released after short press beyond this point
 
-	if (gAusCbMode && funcShort != ACTION_OPT_POWER &&
-	    funcShort != ACTION_OPT_MONITOR && funcShort != ACTION_OPT_SCAN &&
-	    funcShort != ACTION_OPT_FLASHLIGHT && funcShort != ACTION_OPT_KEYLOCK)
-		return;
+    if (gAusCbMode) {
+        if (Key != KEY_SIDE1 && Key != KEY_SIDE2) return;
+        funcShort = Key == KEY_SIDE1 ? ACTION_OPT_MONITOR : ACTION_OPT_FLASHLIGHT;
+    }
 	action_opt_table[funcShort]();
 }
 
