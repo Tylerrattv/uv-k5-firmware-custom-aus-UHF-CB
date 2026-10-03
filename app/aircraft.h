@@ -8,7 +8,8 @@ typedef struct __attribute__((packed)) { uint32_t frequency; uint8_t service; } 
 typedef struct { uint8_t text[18]; uint16_t first; uint8_t count, region; } AirAirportPacked;
 extern const AirAirportPacked gAirports[];
 extern const uint16_t gAirChannelIndex[];
-extern const AirChannel gAirChannels[];
+typedef struct __attribute__((packed)) { uint16_t offset500; uint8_t service; } AirChannelPacked;
+extern const AirChannelPacked gAirChannels[];
 extern const uint16_t gAirportsCount;
 extern const char *const gAirServices[];
 extern const char *const gAirRegions[8];

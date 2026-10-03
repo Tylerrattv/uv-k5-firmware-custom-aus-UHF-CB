@@ -24,6 +24,7 @@ for region in regions:
    value=Decimal(r['frequency_mhz'])*100000
    assert value==int(value), 'Frequency exceeds firmware precision'
    frequency=int(value); assert 11800000<=frequency<13700000
+   assert (frequency-11800000)%50==0, "Frequency not on exact 500 Hz storage grid; never round"
    svc=ascii_text(r['service']).strip()[:8]
    if (frequency,svc) in seen: continue
    seen.add((frequency,svc))
@@ -43,7 +44,7 @@ out='#include "app/aircraft.h"\n'
 out+='const char *const gAirRegions[8] = {'+','.join(json.dumps(x) for x in regions)+'};\n'
 out+='const char *const gAirServices[] = {'+','.join(json.dumps(x) for x in services)+'};\n'
 out+='const AirAirportPacked gAirports[] = {\n'+''.join('{{%s},%d,%d,%d},\n'%(packed_text(n,i),f,c,r) for n,i,f,c,r in airports)+'};\n'
-out+='const AirChannel gAirChannels[] = {\n'+''.join('{%du,%d},\n'%c for c in unique)+'};\n'
+out+='const AirChannelPacked gAirChannels[] = {\n'+''.join('{%du,%d},\n'%((f-11800000)//50,s) for f,s in unique)+'};\n'
 out+='const uint16_t gAirChannelIndex[] = {'+','.join(str(i) for i in indices)+'};\n'
 out+='const uint16_t gAirportsCount = sizeof(gAirports)/sizeof(gAirports[0]);\n'
 (root/'app/aircraft_data.c').write_text(out)

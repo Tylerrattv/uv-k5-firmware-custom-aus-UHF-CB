@@ -31,7 +31,11 @@ const AirAirport *AIR_GetAirport(uint16_t index) {
     return &decoded;
 }
 const AirChannel *AIR_GetChannel(void) {
-    return &gAirChannels[gAirChannelIndex[AIR_GetAirport(gAirAirport)->first+gAirChannel]];
+    static AirChannel decoded;
+    const AirChannelPacked *p=&gAirChannels[gAirChannelIndex[AIR_GetAirport(gAirAirport)->first+gAirChannel]];
+    decoded.frequency=11800000u+(uint32_t)p->offset500*50u;
+    decoded.service=p->service;
+    return &decoded;
 }
 static void refresh(void) { if (gAircraftMode) AUSCB_SelectChannel(gAusCbChannel); }
 void AIR_SelectRegion(uint8_t region) {
@@ -54,7 +58,7 @@ void AIR_Step(int8_t direction) {
 }
 void AIR_RestoreFrequency(uint32_t frequency) {
     const AirAirport *a=AIR_GetAirport(gAirAirport);
-    for (uint16_t i=0;i<a->count;i++) if (gAirChannels[gAirChannelIndex[a->first+i]].frequency==frequency) { AIR_SelectChannel(i);return; }
+    for (uint16_t i=0;i<a->count;i++) if (11800000u+(uint32_t)gAirChannels[gAirChannelIndex[a->first+i]].offset500*50u==frequency) { AIR_SelectChannel(i);return; }
     AIR_SelectChannel(0);
 }
 void AIR_SetMode(bool enabled) {
