@@ -412,7 +412,7 @@ void UI_DisplayMenu(void)
         case MENU_AIR_REGION: strcpy(String, gAirRegions[gSubMenuSelection]); break;
         case MENU_AIR_PORT: sprintf(String, "%.8s\n%.8s\n%s", AIR_GetAirport(gSubMenuSelection)->name, AIR_GetAirport(gSubMenuSelection)->name + (strlen(AIR_GetAirport(gSubMenuSelection)->name)>8 ? 8 : strlen(AIR_GetAirport(gSubMenuSelection)->name)), AIR_GetAirport(gSubMenuSelection)->ident); break;
         case MENU_AIR_CH: sprintf(String, "%ld", (long)gSubMenuSelection+1); break;
-        case MENU_AUSCB: strcpy(String, gSubMenuSelection==0 ? "CB" : gSubMenuSelection==1 ? "AIRCRAFT" : "SPECTRUM"); break;
+        case MENU_AUSCB: strcpy(String, gSubMenuSelection==0 ? "CB" : "AIRCRAFT"); break;
 		case MENU_CB_DUP:
 			strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
 			break;

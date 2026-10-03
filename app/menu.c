@@ -16,7 +16,6 @@
 
 #include "app/auscb.h"
 #include "functions.h"
-#include "app/spectrum.h"
 #include "app/chFrScanner.h"
 #include <string.h>
 
@@ -124,7 +123,7 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 			*pMin = 1;
 			*pMax = 80;
 			break;
-        case MENU_AUSCB: *pMin=0; *pMax=2; break;
+        case MENU_AUSCB: *pMin=0; *pMax=1; break;
         case MENU_AIR_REGION: *pMin=0; *pMax=7; break;
         case MENU_AIR_PORT: *pMin=0; *pMax=AIR_AirportCount(gAirRegion)-1; break;
         case MENU_AIR_CH: *pMin=0; *pMax=AIR_GetAirport(gAirAirport)->count-1; break;
@@ -437,11 +436,7 @@ void MENU_AcceptSetting(void)
 
 		case MENU_AUSCB:
             if (gCurrentFunction == FUNCTION_TRANSMIT) return;
-            if (gSubMenuSelection == 2) {
-                if (gScanStateDir != SCAN_OFF) CHFRSCANNER_Stop();
-                APP_RunSpectrum();
-                AUSCB_SelectChannel(gAusCbChannel);
-            } else AIR_SetMode(gSubMenuSelection == 1);
+            AIR_SetMode(gSubMenuSelection == 1);
             gRequestDisplayScreen = DISPLAY_MAIN;
 			return;
         case MENU_AIR_REGION: AIR_SelectRegion(gSubMenuSelection); return;

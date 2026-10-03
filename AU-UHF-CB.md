@@ -1,6 +1,6 @@
 # Australian UHF CB mode (experimental)
 
-Normal power-on starts in **UHF CB** mode on channel 1. Use **Mode** to choose CB, AIRCRAFT or SPECTRUM. See AIRCRAFT.md. **CB CH** selects channels 1â€“80; up/down steps through them. Press * to start/stop scanning. **CB Dup** enables the +750 kHz repeater offset on channels 1â€“8 and 41â€“48. PTT transmits on the selected voice channel. The screen shows one large CB channel label, without a frequency or duplicate VFO. TX/RX, power, narrow FM, duplex, scanning and transmit warnings remain visible.
+Normal power-on starts in **UHF CB** mode on channel 1. Use **Mode** to choose CB or AIRCRAFT. See AIRCRAFT.md. **CB CH** selects channels 1â€“80; up/down steps through them. Press * to start/stop scanning. **CB Dup** enables the +750 kHz repeater offset on channels 1â€“8 and 41â€“48. PTT transmits on the selected voice channel. The screen shows one large CB channel label, without a frequency or duplicate VFO. TX/RX, power, narrow FM, duplex, scanning and transmit warnings remain visible.
 
 The profile forces narrow FM, disables scrambling, DTMF identification, companding, VOX and dual/cross-band operation. Channels 22, 23, 61, 62 and 63 remain selectable for reception but block transmission. Channels 5 and 35 are for emergency messages only.
 
