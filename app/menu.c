@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include <string.h>
 
 #if !defined(ENABLE_OVERLAY)
@@ -78,6 +79,7 @@ uint8_t gUnlockAllTxConfCnt;
 
 void MENU_StartCssScan(void)
 {
+	if (gAusCbMode) return;
 	SCANNER_Start(true);
 	gUpdateStatus = true;
 	gCssBackgroundScan = true;
@@ -115,6 +117,15 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 {
 	switch (menu_id)
 	{
+		case MENU_CB_CH:
+			*pMin = 1;
+			*pMax = 80;
+			break;
+		case MENU_AUSCB:
+		case MENU_CB_DUP:
+			*pMin = 0;
+			*pMax = 1;
+			break;
 		case MENU_SQL:
 			*pMin = 0;
 			*pMax = 9;
@@ -370,11 +381,31 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 	return 0;
 }
 
+static bool MENU_CbSettingAllowed(void)
+{
+    switch (UI_MENU_GetCurrentMenuId()) {
+        case MENU_AUSCB:
+        case MENU_CB_CH:
+        case MENU_CB_DUP:
+        case MENU_SQL:
+        case MENU_TXP:
+            return true;
+        default:
+            return false;
+    }
+}
+
 void MENU_AcceptSetting(void)
 {
 	int32_t        Min;
 	int32_t        Max;
 	FREQ_Config_t *pConfig = &gTxVfo->freq_config_RX;
+
+	// Channel and mode edits are temporary while the CB profile is active.
+	if (gAusCbMode && !MENU_CbSettingAllowed()) {
+		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+		return;
+	}
 
 	if (!MENU_GetLimits(UI_MENU_GetCurrentMenuId(), &Min, &Max))
 	{
@@ -388,6 +419,16 @@ void MENU_AcceptSetting(void)
 		default:
 			return;
 
+		case MENU_AUSCB:
+			AUSCB_SetMode(gSubMenuSelection != 0);
+			return;
+		case MENU_CB_CH:
+			AUSCB_SelectChannel(gSubMenuSelection);
+			return;
+		case MENU_CB_DUP:
+			gAusCbDuplex = gSubMenuSelection != 0;
+			if (gAusCbMode) AUSCB_SelectChannel(gAusCbChannel);
+			return;
 		case MENU_SQL:
 			gEeprom.SQUELCH_LEVEL = gSubMenuSelection;
 			gVfoConfigureMode     = VFO_CONFIGURE;
@@ -821,6 +862,9 @@ void MENU_ShowCurrentSetting(void)
 {
 	switch (UI_MENU_GetCurrentMenuId())
 	{
+		case MENU_AUSCB: gSubMenuSelection = gAusCbMode; break;
+		case MENU_CB_CH: gSubMenuSelection = gAusCbChannel; break;
+		case MENU_CB_DUP: gSubMenuSelection = gAusCbDuplex; break;
 		case MENU_SQL:
 			gSubMenuSelection = gEeprom.SQUELCH_LEVEL;
 			break;
@@ -1380,6 +1424,10 @@ static void MENU_Key_EXIT(bool bKeyPressed, bool bKeyHeld)
 
 static void MENU_Key_MENU(const bool bKeyPressed, const bool bKeyHeld)
 {
+	if (gAusCbMode && !MENU_CbSettingAllowed()) {
+		gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+		return;
+	}
 	if (bKeyHeld || !bKeyPressed)
 		return;
 

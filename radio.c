@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include "driver/bk4819-regs.h"
 #include <string.h>
 
@@ -125,6 +126,10 @@ void RADIO_InitInfo(VFO_Info_t *pInfo, const uint8_t ChannelSave, const uint32_t
 void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure)
 {
 	VFO_Info_t *pVfo = &gEeprom.VfoInfo[VFO];
+	if (gAusCbMode) {
+		AUSCB_Apply(pVfo);
+		return;
+	}
 
 	if (!gSetting_350EN) {
 		if (gEeprom.FreqChannel[VFO] == FREQ_CHANNEL_FIRST + BAND5_350MHz)
@@ -920,6 +925,12 @@ void RADIO_PrepareTX(void)
 	}
 
 	RADIO_SelectCurrentVfo();
+
+	if (gAusCbMode && !AUSCB_TxAllowed(gCurrentVfo->pTX->Frequency)) {
+		RADIO_SetVfoState(VFO_STATE_TX_DISABLE);
+		AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
+		return;
+	}
 
 	if(TX_freq_check(gCurrentVfo->pTX->Frequency) != 0
 #if defined(ENABLE_ALARM) || defined(ENABLE_TX1750)

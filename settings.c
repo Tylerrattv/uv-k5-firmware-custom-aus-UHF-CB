@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include <string.h>
 
 #include "app/dtmf.h"
@@ -447,6 +448,7 @@ void SETTINGS_SaveFM(void)
 
 void SETTINGS_SaveVfoIndices(void)
 {
+	if (gAusCbMode) return;
 	uint8_t State[8];
 
 	#ifndef ENABLE_NOAA
@@ -469,6 +471,7 @@ void SETTINGS_SaveVfoIndices(void)
 
 void SETTINGS_SaveSettings(void)
 {
+	if (gAusCbMode) return;
 	uint8_t  State[8];
 	uint32_t Password[2];
 
@@ -596,6 +599,7 @@ void SETTINGS_SaveSettings(void)
 
 void SETTINGS_SaveChannel(uint8_t Channel, uint8_t VFO, const VFO_Info_t *pVFO, uint8_t Mode)
 {
+	if (gAusCbMode) return;
 #ifdef ENABLE_NOAA
 	if (IS_NOAA_CHANNEL(Channel))
 		return;

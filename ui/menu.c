@@ -122,6 +122,9 @@ const t_menu_item MenuList[] =
 #endif
 	{"BatVol", VOICE_ID_INVALID,                       MENU_VOL           }, // was "VOL"
 	{"RxMode", VOICE_ID_DUAL_STANDBY,                  MENU_TDR           },
+	{"UHF CB", VOICE_ID_INVALID, MENU_AUSCB},
+	{"CB CH", VOICE_ID_INVALID, MENU_CB_CH},
+	{"CB Dup", VOICE_ID_INVALID, MENU_CB_DUP},
 	{"Sql",    VOICE_ID_SQUELCH,                       MENU_SQL           },
 
 	// hidden menu items from here on
@@ -492,6 +495,13 @@ void UI_DisplayMenu(void)
 
 	switch (UI_MENU_GetCurrentMenuId())
 	{
+		case MENU_CB_CH:
+			sprintf(String, "CH %02ld", (long)gSubMenuSelection);
+			break;
+		case MENU_AUSCB:
+		case MENU_CB_DUP:
+			strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
+			break;
 		case MENU_SQL:
 			sprintf(String, "%d", gSubMenuSelection);
 			break;

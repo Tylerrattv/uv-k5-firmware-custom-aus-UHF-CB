@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include <string.h>
 
 #include "app/action.h"
@@ -683,6 +684,18 @@ static void MAIN_Key_UP_DOWN(bool bKeyPressed, bool bKeyHeld, int8_t Direction)
 
 void MAIN_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 {
+	if (gAusCbMode) {
+		if (Key == KEY_UP || Key == KEY_DOWN) {
+			if (bKeyPressed) AUSCB_Step(Key == KEY_UP ? 1 : -1);
+			return;
+		}
+		if (Key == KEY_STAR) {
+			if (!bKeyPressed && !bKeyHeld) ACTION_Scan(false);
+			return;
+		}
+		if (Key != KEY_MENU && Key != KEY_EXIT && Key != KEY_PTT && Key != KEY_F)
+			return;
+	}
 #ifdef ENABLE_FMRADIO
 	if (gFmRadioMode && Key != KEY_PTT && Key != KEY_EXIT) {
 		if (!bKeyHeld && bKeyPressed)

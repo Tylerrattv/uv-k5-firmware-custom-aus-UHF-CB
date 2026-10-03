@@ -14,6 +14,7 @@
  *     limitations under the License.
  */
 
+#include "app/auscb.h"
 #include <string.h>
 #include <stdlib.h>  // abs()
 
@@ -327,6 +328,40 @@ void UI_DisplayMain(void)
 
 	unsigned int activeTxVFO = gRxVfoIsActive ? gEeprom.RX_VFO : gEeprom.TX_VFO;
 
+	if (gAusCbMode) {
+		// A single CB view: channel on pages 1-2, live meter on page 3.
+		UI_PrintStringSmallBold("UHF CB", 2, 0, 0);
+		const bool transmitting = gCurrentFunction == FUNCTION_TRANSMIT;
+		UI_PrintStringSmallBold(transmitting ? "TX" : FUNCTION_IsRx() ? "RX" : "", 108, 0, 0);
+		sprintf(String, "CB %02u", gAusCbChannel);
+		UI_PrintString(String, 0, LCD_WIDTH, 1, 8);
+		const char *power[] = {"LOW", "MID", "HIGH"};
+		sprintf(String, "%s  NFM%s", power[gCurrentVfo->OUTPUT_POWER % 3],
+		        gAusCbDuplex && AUSCB_IsRepeater(gAusCbChannel) ? "  DUP" : "");
+		UI_PrintStringSmallNormal(String, 0, LCD_WIDTH, 4);
+		const enum VfoState_t state = VfoState[activeTxVFO];
+		if (state != VFO_STATE_NORMAL && state < ARRAY_SIZE(VfoStateStr))
+			UI_PrintStringSmallBold(VfoStateStr[state], 0, LCD_WIDTH, 5);
+		else if (!AUSCB_VoiceChannel(gAusCbChannel))
+			UI_PrintStringSmallBold("RX ONLY", 0, LCD_WIDTH, 5);
+		if (gScanStateDir != SCAN_OFF)
+			UI_PrintStringSmallNormal("SCANNING", 0, LCD_WIDTH, 6);
+#ifdef ENABLE_AUDIO_BAR
+		if (transmitting && gSetting_mic_bar) {
+			center_line = CENTER_LINE_AUDIO_BAR;
+			UI_DisplayAudioBar();
+		}
+#endif
+#ifdef ENABLE_RSSI_BAR
+		if (FUNCTION_IsRx()) {
+			center_line = CENTER_LINE_RSSI;
+			DisplayRSSIBar(false);
+		}
+#endif
+		ST7565_BlitFullScreen();
+		return;
+	}
+
 	for (unsigned int vfo_num = 0; vfo_num < 2; vfo_num++)
 	{
 		const unsigned int line0 = 0;  // text screen line
@@ -340,7 +375,7 @@ void UI_DisplayMain(void)
 		if (activeTxVFO != vfo_num) // this is not active TX VFO
 		{
 #ifdef ENABLE_SCAN_RANGES
-			if(gScanRangeStart) {
+			if(gScanRangeStart && !gAusCbMode) {
 				UI_PrintString("ScnRng", 5, 0, line, 8);
 				sprintf(String, "%3u.%05u", gScanRangeStart / 100000, gScanRangeStart % 100000);
 				UI_PrintStringSmallNormal(String, 56, 0, line);
