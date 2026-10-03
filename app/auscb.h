@@ -1,6 +1,7 @@
 #ifndef APP_AUSCB_H
 #define APP_AUSCB_H
 #include "radio.h"
+#include "app/aircraft.h"
 #include "app/auscb_plan.h"
 extern bool gAusCbMode;
 extern bool gAusCbDuplex;

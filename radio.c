@@ -926,7 +926,7 @@ void RADIO_PrepareTX(void)
 
 	RADIO_SelectCurrentVfo();
 
-	if (gAusCbMode && !AUSCB_TxAllowed(gCurrentVfo->pTX->Frequency)) {
+	if (gAircraftMode || (gAusCbMode && !AUSCB_TxAllowed(gCurrentVfo->pTX->Frequency))) {
 		RADIO_SetVfoState(VFO_STATE_TX_DISABLE);
 		AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
 		return;

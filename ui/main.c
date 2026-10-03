@@ -328,6 +328,23 @@ void UI_DisplayMain(void)
 
 	unsigned int activeTxVFO = gRxVfoIsActive ? gEeprom.RX_VFO : gEeprom.TX_VFO;
 
+    if (gAusCbMode && gAircraftMode) {
+        const AirAirport *airport = AIR_GetAirport(gAirAirport);
+        const AirChannel *channel = AIR_GetChannel();
+        sprintf(String, "%s %s", gAirRegions[gAirRegion], airport->ident);
+        UI_PrintStringSmallBold(String, 2, 0, 0);
+        UI_PrintStringSmallBold(FUNCTION_IsRx() ? "RX" : "", 108, 0, 0);
+        UI_PrintStringSmallBold(airport->name, 0, LCD_WIDTH, 1);
+        UI_PrintStringSmallNormal(gAirServices[channel->service], 0, LCD_WIDTH, 2);
+        sprintf(String, "%lu.%05lu", (unsigned long)(channel->frequency/100000), (unsigned long)(channel->frequency%100000));
+        UI_PrintString(String, 0, LCD_WIDTH, 4, 8);
+        UI_PrintStringSmallNormal(gScanStateDir != SCAN_OFF ? "SCANNING / RX ONLY" : "AIRCRAFT / RX ONLY", 0, LCD_WIDTH, 6);
+#ifdef ENABLE_RSSI_BAR
+        if (FUNCTION_IsRx()) { center_line=CENTER_LINE_RSSI; DisplayRSSIBar(false); }
+#endif
+        ST7565_BlitFullScreen();
+        return;
+    }
 	if (gAusCbMode) {
 		// A single CB view: channel on pages 1-2, live meter on page 3.
 		const bool transmitting = gCurrentFunction == FUNCTION_TRANSMIT;

@@ -16,13 +16,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Validate reproducible aircraft catalogue
+        run: |
+          python tools/build_air_catalogue.py
+          git diff --exit-code -- app/aircraft_data.c
       - name: Channel plan and mode tests
         run: |
           gcc -std=c11 -Wall -Wextra -Werror tests/auscb_plan_test.c -o /tmp/auscb-plan-test
           /tmp/auscb-plan-test
-          gcc -std=c11 -Wall -Wextra -Werror -I. -DENABLE_VOX tests/auscb_mode_test.c app/auscb.c -o /tmp/auscb-mode-test
+          gcc -std=c11 -Wall -Wextra -Werror -I. -DENABLE_VOX tests/auscb_mode_test.c app/auscb.c app/aircraft.c app/aircraft_data.c -o /tmp/auscb-mode-test
           /tmp/auscb-mode-test
-          gcc -std=c11 -Wall -Wextra -Werror -I. -DENABLE_VOX -DENABLE_DTMF_CALLING tests/auscb_mode_test.c app/auscb.c -o /tmp/auscb-dtmf-test
+          gcc -std=c11 -Wall -Wextra -Werror -I. -DENABLE_VOX -DENABLE_DTMF_CALLING tests/auscb_mode_test.c app/auscb.c app/aircraft.c app/aircraft_data.c -o /tmp/auscb-dtmf-test
           /tmp/auscb-dtmf-test
       - name: Build and verify flash image
         run: |
@@ -38,4 +42,7 @@ jobs:
             firmware.packed.bin
             SHA256SUMS.txt
             AU-UHF-CB.md
+            AIRCRAFT.md
+            data/airports-au.csv
+            data/airports-selected.txt
           if-no-files-found: error

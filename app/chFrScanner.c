@@ -132,7 +132,8 @@ void CHFRSCANNER_Stop(void)
 
 	const uint32_t chFr = gScanKeepResult ? lastFoundFrqOrChan : initialFrqOrChan;
 	if (gAusCbMode) {
-		AUSCB_SelectChannel(AUSCB_ChannelFromFrequency(chFr));
+		if (gAircraftMode) AIR_RestoreFrequency(chFr);
+		else AUSCB_SelectChannel(AUSCB_ChannelFromFrequency(chFr));
 		return;
 	}
 	const bool channelChanged = chFr != initialFrqOrChan;

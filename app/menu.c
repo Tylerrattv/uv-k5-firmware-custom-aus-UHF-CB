@@ -15,6 +15,8 @@
  */
 
 #include "app/auscb.h"
+#include "app/spectrum.h"
+#include "app/chFrScanner.h"
 #include <string.h>
 
 #if !defined(ENABLE_OVERLAY)
@@ -121,7 +123,10 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 			*pMin = 1;
 			*pMax = 80;
 			break;
-		case MENU_AUSCB:
+        case MENU_AUSCB: *pMin=0; *pMax=2; break;
+        case MENU_AIR_REGION: *pMin=0; *pMax=7; break;
+        case MENU_AIR_PORT: *pMin=0; *pMax=AIR_AirportCount(gAirRegion)-1; break;
+        case MENU_AIR_CH: *pMin=0; *pMax=AIR_GetAirport(gAirAirport)->count-1; break;
 		case MENU_CB_DUP:
 			*pMin = 0;
 			*pMax = 1;
@@ -384,6 +389,16 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 static bool MENU_CbSettingAllowed(void)
 {
     switch (UI_MENU_GetCurrentMenuId()) {
+        case MENU_AIR_REGION:
+        case MENU_AIR_PORT:
+        case MENU_AIR_CH:
+        case MENU_SC_REV:
+        case MENU_ABR:
+        case MENU_BEEP:
+        case MENU_AUTOLK:
+        case MENU_BAT_TXT:
+        case MENU_TOT:
+        case MENU_VOL:
         case MENU_AUSCB:
         case MENU_CB_CH:
         case MENU_CB_DUP:
@@ -420,8 +435,17 @@ void MENU_AcceptSetting(void)
 			return;
 
 		case MENU_AUSCB:
-			AUSCB_SetMode(gSubMenuSelection != 0);
+            if (gCurrentFunction == FUNCTION_TRANSMIT) return;
+            if (gSubMenuSelection == 2) {
+                if (gScanStateDir != SCAN_OFF) CHFRSCANNER_Stop();
+                APP_RunSpectrum();
+                AUSCB_SelectChannel(gAusCbChannel);
+            } else AIR_SetMode(gSubMenuSelection == 1);
+            gRequestDisplayScreen = DISPLAY_MAIN;
 			return;
+        case MENU_AIR_REGION: AIR_SelectRegion(gSubMenuSelection); return;
+        case MENU_AIR_PORT: AIR_SelectAirport(gSubMenuSelection); return;
+        case MENU_AIR_CH: AIR_SelectChannel(gSubMenuSelection); return;
 		case MENU_CB_CH:
 			AUSCB_SelectChannel(gSubMenuSelection);
 			return;
@@ -862,7 +886,10 @@ void MENU_ShowCurrentSetting(void)
 {
 	switch (UI_MENU_GetCurrentMenuId())
 	{
-		case MENU_AUSCB: gSubMenuSelection = gAusCbMode; break;
+		case MENU_AUSCB: gSubMenuSelection = gAircraftMode; break;
+        case MENU_AIR_REGION: gSubMenuSelection = gAirRegion; break;
+        case MENU_AIR_PORT: gSubMenuSelection = gAirAirport; break;
+        case MENU_AIR_CH: gSubMenuSelection = gAirChannel; break;
 		case MENU_CB_CH: gSubMenuSelection = gAusCbChannel; break;
 		case MENU_CB_DUP: gSubMenuSelection = gAusCbDuplex; break;
 		case MENU_SQL:
