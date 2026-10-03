@@ -30,4 +30,25 @@ static inline uint8_t AUSCB_ChannelFromFrequency(uint32_t frequency)
         if (AUSCB_Frequency(channel) == frequency) return channel;
     return 1;
 }
+
+// Short Australian channel-use hints, max 18 characters for the LCD.
+// Road/convoy labels describe customary use, not exclusive allocations.
+static inline const char *AUSCB_ChannelUse(uint8_t channel)
+{
+    if (channel < 1 || channel > 80) return "INVALID CHANNEL";
+    if (channel == 5 || channel == 35) return "EMERGENCY ONLY";
+    if (channel == 22 || channel == 23) return "DATA ONLY";
+    if (channel >= 61 && channel <= 63) return "RESERVED";
+    if (AUSCB_IsRepeater(channel)) return "REPEATER OUTPUT";
+    if ((channel >= 31 && channel <= 38) || (channel >= 71 && channel <= 78))
+        return "REPEATER INPUT";
+    switch (channel) {
+        case 10: return "4WD / CONVOY";
+        case 11: return "CALLING";
+        case 18: return "CARAVANS / CAMPERS";
+        case 29: return "PACIFIC/BRUCE HWY";
+        case 40: return "ROAD / TRUCKS";
+        default: return "GENERAL USE";
+    }
+}
 #endif

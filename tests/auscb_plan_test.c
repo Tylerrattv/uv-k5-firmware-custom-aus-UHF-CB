@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 #include "../app/auscb_plan.h"
 int main(void)
 {
@@ -23,5 +24,23 @@ int main(void)
         assert(!AUSCB_VoiceChannel(blocked[i]));
     assert(AUSCB_VoiceChannel(5) && AUSCB_VoiceChannel(35));
     assert(AUSCB_VoiceChannel(60) && AUSCB_VoiceChannel(64) && AUSCB_VoiceChannel(80));
+    for (uint8_t c = 1; c <= 80; ++c) {
+        const char *label = AUSCB_ChannelUse(c);
+        assert(strlen(label) > 0 && strlen(label) <= 18);
+        if (c == 5 || c == 35) assert(strcmp(label, "EMERGENCY ONLY") == 0);
+        else if (c == 22 || c == 23) assert(strcmp(label, "DATA ONLY") == 0);
+        else if (c >= 61 && c <= 63) assert(strcmp(label, "RESERVED") == 0);
+        else if (AUSCB_IsRepeater(c)) assert(strcmp(label, "REPEATER OUTPUT") == 0);
+        else if ((c >= 31 && c <= 38) || (c >= 71 && c <= 78))
+            assert(strcmp(label, "REPEATER INPUT") == 0);
+    }
+    assert(strcmp(AUSCB_ChannelUse(10), "4WD / CONVOY") == 0);
+    assert(strcmp(AUSCB_ChannelUse(11), "CALLING") == 0);
+    assert(strcmp(AUSCB_ChannelUse(18), "CARAVANS / CAMPERS") == 0);
+    assert(strcmp(AUSCB_ChannelUse(29), "PACIFIC/BRUCE HWY") == 0);
+    assert(strcmp(AUSCB_ChannelUse(40), "ROAD / TRUCKS") == 0);
+    assert(strcmp(AUSCB_ChannelUse(80), "GENERAL USE") == 0);
+    assert(strcmp(AUSCB_ChannelUse(0), "INVALID CHANNEL") == 0);
+    assert(strcmp(AUSCB_ChannelUse(81), "INVALID CHANNEL") == 0);
     return 0;
 }
