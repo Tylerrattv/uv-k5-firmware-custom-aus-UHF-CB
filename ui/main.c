@@ -330,7 +330,6 @@ void UI_DisplayMain(void)
 
 	if (gAusCbMode) {
 		// A single CB view: channel on pages 1-2, live meter on page 3.
-		UI_PrintStringSmallBold("UHF CB", 2, 0, 0);
 		const bool transmitting = gCurrentFunction == FUNCTION_TRANSMIT;
 		UI_PrintStringSmallBold(transmitting ? "TX" : FUNCTION_IsRx() ? "RX" : "", 108, 0, 0);
 		sprintf(String, "CB %02u", gAusCbChannel);
@@ -338,7 +337,8 @@ void UI_DisplayMain(void)
 		const char *power[] = {"LOW", "MID", "HIGH"};
 		sprintf(String, "%s  NFM%s", power[gCurrentVfo->OUTPUT_POWER % 3],
 		        gAusCbDuplex && AUSCB_IsRepeater(gAusCbChannel) ? "  DUP" : "");
-		UI_PrintStringSmallNormal(String, 0, LCD_WIDTH, 4);
+		UI_PrintStringSmallNormal(String, 2, 0, 0);
+		UI_PrintStringSmallBold(AUSCB_ChannelUse(gAusCbChannel), 0, LCD_WIDTH, 4);
 		const enum VfoState_t state = VfoState[activeTxVFO];
 		if (state != VFO_STATE_NORMAL && state < ARRAY_SIZE(VfoStateStr))
 			UI_PrintStringSmallBold(VfoStateStr[state], 0, LCD_WIDTH, 5);
