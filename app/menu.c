@@ -15,6 +15,7 @@
  */
 
 #include "app/auscb.h"
+#include "functions.h"
 #include "app/spectrum.h"
 #include "app/chFrScanner.h"
 #include <string.h>

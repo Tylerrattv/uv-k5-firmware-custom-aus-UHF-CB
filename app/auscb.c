@@ -23,7 +23,7 @@ void AUSCB_Apply(VFO_Info_t *vfo)
     vfo->CHANNEL_SAVE = FREQ_CHANNEL_FIRST + (gAircraftMode ? BAND2_108MHz : BAND7_470MHz);
     vfo->Band = gAircraftMode ? BAND2_108MHz : BAND7_470MHz;
     vfo->Modulation = gAircraftMode ? MODULATION_AM : MODULATION_FM;
-    vfo->CHANNEL_BANDWIDTH = BK4819_FILTER_BW_NARROW;
+    vfo->CHANNEL_BANDWIDTH = gAircraftMode ? BK4819_FILTER_BW_WIDE : BK4819_FILTER_BW_NARROW;
     vfo->STEP_SETTING = STEP_12_5kHz;
     vfo->StepFrequency = 1250;
     vfo->FrequencyReverse = false;
