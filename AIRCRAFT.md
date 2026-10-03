@@ -14,7 +14,13 @@ The upper side button toggles monitor, and the lower toggles the flashlight. Nor
 
 The included data/airports-au.csv has 3,601 entries for 1,440 non-closed Australian airports/airfields with listed frequencies in 118–137 MHz, sourced from the public-domain OurAirports download on 3 October 2026. It includes state, airport name/code, coordinates, service, description and frequency. All entries are marked unverified. This is nationwide source coverage, not a claim that every Australian frequency is present or current. Coordinates describe the airport, not reception coverage. En-route sectors are not comprehensively represented.
 
-The default onboard selection has 25 airports and 126 frequency entries across ACT, NSW, NT, QLD, SA, TAS, VIC and WA. It is a subset, not the entire nationwide catalogue. Selection: Canberra, Sydney/Bankstown/Camden/Newcastle, Darwin/Alice Springs, Brisbane/Gold Coast/Cairns/Rockhampton/Sunshine Coast/Townsville, Adelaide/Parafield, Hobart/Launceston, Melbourne/Avalon/Essendon/Moorabbin, Perth/Jandakot/Broome/Port Hedland.
+The onboard selection has **340 airports and 895 frequency/service entries**: all **196 NSW** and **127 VIC** airports/airfields with usable 118–137 MHz entries in the bundled catalogue, plus **17 major airports elsewhere**. Airports absent from this source, marked closed, or without usable listed frequencies are not included. This is catalogue coverage, not a guarantee of every operating airfield or current frequency.
+
+Other-state/territory airports: Canberra; Darwin and Alice Springs; Brisbane, Gold Coast, Cairns, Rockhampton, Sunshine Coast and Townsville; Adelaide and Parafield; Hobart and Launceston; Perth, Jandakot, Broome and Port Hedland.
+
+Airports are sorted alphabetically by name within each state. The Airprt menu shows both halves of the 16-character airport name and its identifier. Long names are abbreviated to 16 characters; the identifier distinguishes similarly named airports.
+
+The firmware stores airport names in a six-bit character format and shares 271 unique frequency/service pairs across the 895 entries. All entries remain individually selectable per airport. The generator emits uncompressed host-test expectations; tests check every decoded name, identifier, frequency and service. The unused legacy VFO display/keypad paths were removed to make room; CB, Aircraft and Spectrum operation are retained.
 
 For a custom firmware list, edit data/airports-selected.txt with identifiers from the CSV, run `python tools/build_air_catalogue.py`, and rebuild. Keep at least one airport for each state/territory; the generator rejects unknown/empty airports and checks bounds. The linker enforces the radio's flash capacity. This is a build-time customisation, not an on-radio database upload.
 

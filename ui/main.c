@@ -62,18 +62,6 @@ const char *VfoStateStr[] = {
 
 // ***************************************************************************
 
-static void DrawSmallAntennaAndBars(uint8_t *p, unsigned int level)
-{
-	if(level>6)
-		level = 6;
-
-	memcpy(p, BITMAP_Antenna, ARRAY_SIZE(BITMAP_Antenna));
-
-	for(uint8_t i = 1; i <= level; i++) {
-		char bar = (0xff << (6-i)) & 0x7F;
-		memset(p + 2 + i*3, bar, 2);
-	}
-}
 #if defined ENABLE_AUDIO_BAR || defined ENABLE_RSSI_BAR
 
 static void DrawLevelBar(uint8_t xpos, uint8_t line, uint8_t level)
