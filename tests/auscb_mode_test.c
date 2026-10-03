@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "app/auscb.h"
+#include "aircraft_expected.h"
 #include "app/chFrScanner.h"
 #include "app/dtmf.h"
 #include "driver/bk4819.h"
@@ -122,17 +123,25 @@ int main(void)
     // Every installed airport/service must remain RX-only, including wrong modulation.
     AIR_SetMode(true);
     assert(gAircraftMode && gAusCbMode);
+    unsigned expectedIndex=0;
+    assert(gAirportsCount==sizeof(expectedAirports)/sizeof(expectedAirports[0]));
     for (uint8_t region=0;region<8;region++) {
         AIR_SelectRegion(region);
         assert(gAirRegion==region && AIR_AirportCount(region)>0);
         for (uint16_t a=0;a<AIR_AirportCount(region);a++) {
             AIR_SelectAirport(a);
             const AirAirport *airport=AIR_GetAirport(a);
+            const AirAirport *expected=&expectedAirports[expectedIndex++];
+            assert(strcmp(airport->name,expected->name)==0);
+            assert(strcmp(airport->ident,expected->ident)==0);
+            assert(airport->first==expected->first && airport->count==expected->count);
             assert(airport->region==region && airport->count>0);
             assert(strlen(airport->name)<=16 && strlen(airport->ident)<=8);
             for (uint16_t c=0;c<airport->count;c++) {
                 AIR_SelectChannel(c);
                 assert(gTxVfo->pRX->Frequency==AIR_GetChannel()->frequency);
+                assert(AIR_GetChannel()->frequency==expectedFrequencies[expected->first+c]);
+                assert(AIR_GetChannel()->service==expectedServices[expected->first+c]);
                 assert(gTxVfo->pRX->Frequency>=11800000 && gTxVfo->pRX->Frequency<13700000);
                 assert(gTxVfo->Modulation==MODULATION_AM);
                 assert(!AUSCB_TxAllowed(gTxVfo->pTX->Frequency));

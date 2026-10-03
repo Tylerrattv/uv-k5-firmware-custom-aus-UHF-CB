@@ -20,7 +20,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           python tools/build_air_catalogue.py
-          git diff --exit-code -- app/aircraft_data.c
+          git diff --exit-code -- app/aircraft_data.c tests/aircraft_expected.h
       - name: Channel plan and mode tests
         run: |
           gcc -std=c11 -Wall -Wextra -Werror tests/auscb_plan_test.c -o /tmp/auscb-plan-test

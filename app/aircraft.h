@@ -3,8 +3,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 typedef struct { char name[17]; char ident[9]; uint16_t first; uint8_t count, region; } AirAirport;
-typedef struct { uint32_t frequency; uint8_t service; } AirChannel;
-extern const AirAirport gAirports[];
+typedef struct __attribute__((packed)) { uint32_t frequency; uint8_t service; } AirChannel;
+// 24 six-bit printable ASCII characters: 16-char name followed by 8-char identifier.
+typedef struct { uint8_t text[18]; uint16_t first; uint8_t count, region; } AirAirportPacked;
+extern const AirAirportPacked gAirports[];
+extern const uint16_t gAirChannelIndex[];
 extern const AirChannel gAirChannels[];
 extern const uint16_t gAirportsCount;
 extern const char *const gAirServices[];
